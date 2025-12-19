@@ -5,7 +5,7 @@
 **[**[**🌐 Project Page**](https://worldcanvas.github.io/)**]**
 **[**[**🤗 Model Weights**](https://huggingface.co/hlwang06/WorldCanvas)**]**
 
-
+https://github.com/user-attachments/assets/cc8f7fd6-fd89-47e9-b2bf-38298131d1f7
 
 
 _**[Hanlin Wang<sup>1,2</sup>](https://scholar.google.com/citations?user=0uO4fzkAAAAJ&hl=zh-CN), [Hao Ouyang<sup>2</sup>](https://ken-ouyang.github.io/), [Qiuyu Wang<sup>2</sup>](https://github.com/qiuyu96), [Yue Yu<sup>1,2</sup>](https://bruceyy.com/), [Yihao Meng<sup>1,2</sup>](https://yihao-meng.github.io/), <br> [Wen Wang<sup>3,2</sup>](https://github.com/encounter1997), [Ka Leong Cheng<sup>2</sup>](https://felixcheng97.github.io/), [Shuailei Ma<sup>4,2</sup>](https://scholar.google.com/citations?user=dNhzCu4AAAAJ&hl=zh-CN), [Qingyan Bai<sup>1,2</sup>](https://bqy.info/), [Yixuan Li<sup>5,2</sup>](https://yixuanli98.github.io/), <br> [Cheng Chen<sup>6,2</sup>](https://scholar.google.com/citations?user=nNQU71kAAAAJ&hl=zh-CN), [Yanhong Zeng<sup>2</sup>](https://zengyh1900.github.io/), [Xing Zhu<sup>2</sup>](https://openreview.net/profile?id=~Xing_Zhu2), [Yujun Shen<sup>2</sup>](https://shenyujun.github.io/), [Qifeng Chen<sup>1</sup>](https://cqf.io/)**_
