@@ -13,7 +13,7 @@ _**[Hanlin Wang<sup>1,2</sup>](https://scholar.google.com/citations?user=0uO4fzk
 <sup>1</sup>HKUST, <sup>2</sup>Ant Group, <sup>3</sup>ZJU, <sup>4</sup>NEU, <sup>5</sup>CUHK, <sup>6</sup>NTU
 
 # TLDR
-WorldCanvas is a I2V framework for promptable world events that enables rich, user-directed simulation by combining text, trajectories, and reference images.
+WorldCanvas is an I2V framework for promptable world events that enables rich, user-directed simulation by combining text, trajectories, and reference images.
 
 **Strongly recommend seeing our [demo page](https://worldcanvas.github.io/).**
 
