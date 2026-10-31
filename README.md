@@ -1,9 +1,10 @@
-# The World is Your Canvas: Painting Promptable Events with Reference Images, Trajectories, and Text
+# The World is Your Canvas: Painting Promptable Events with Reference Images, Trajectories, and Text (SIGGRAPH Asia 2026)
 
 
 **[**[**📄 Paper**](https://arxiv.org/abs/2512.16924)**]**
 **[**[**🌐 Project Page**](https://worldcanvas.github.io/)**]**
 **[**[**🤗 Model Weights**](https://huggingface.co/hlwang06/WorldCanvas)**]**
+**[**[**📦 Data**](https://huggingface.co/hlwang06/WorldCanvas/tree/main/WorldCanvas_data)**]**
 
 https://github.com/user-attachments/assets/cc8f7fd6-fd89-47e9-b2bf-38298131d1f7
 
@@ -25,6 +26,7 @@ If you enjoyed the videos we created, please consider giving us a star 🌟.
 *   Full inference code
 *   `WorldCanvas-14B` 
 *   `WorldCanvas-14B-ref`
+*   [Data pipeline](#data-pipeline) and sample cases
 
 
 
@@ -234,6 +236,84 @@ You can change the seed to obtain different results.
 ## Examples
 
 We provide several examples directly within the `example` folder and use these examples in `WorldCanvas_inference.py` and `WorldCanvas_inference_refimage.py` script. You can try them out immediately.
+
+
+# Data Pipeline
+
+We release our training data pipeline here: **[➡️ WorldCanvas Data Pipeline](https://huggingface.co/hlwang06/WorldCanvas/tree/main/WorldCanvas_data)**. Given raw videos, it produces training JSONs containing keypoint trajectories, visibility, object masks, and trajectory-based motion captions.
+
+### Environment
+
+```bash
+cd worldcanvas_data_pipeline
+conda create -n worldcanvas_pipeline python=3.10 -y
+conda activate worldcanvas_pipeline
+pip install -r requirements.txt
+```
+
+### Checkpoints
+
+Run inside `worldcanvas_data_pipeline/`:
+
+```bash
+wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
+wget https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8n.pt
+wget -P cotracker https://huggingface.co/facebook/cotracker3/resolve/main/scaled_offline.pth
+huggingface-cli download Qwen/Qwen2.5-VL-72B-Instruct --local-dir checkpoints/Qwen2.5-VL-72B-Instruct
+```
+
+### Usage
+
+All commands are run inside `worldcanvas_data_pipeline/`. Prepare a CSV with a `video` column listing your video paths (each video should be at least ~5.1 s long). Videos are center-cropped and resized to 832×480, and 81 frames are sampled at 16 FPS.
+
+**Step 1: Keypoint tracking.** YOLO detects foreground objects in the first frame, SAM segments them, K-means selects 1–3 keypoints per mask (plus a few background points), and CoTracker3 tracks all points.
+
+```bash
+torchrun --standalone --nproc_per_node=<NUM_GPUS> ddp_sam_track_data.py \
+    --data_path videos.csv \
+    --save_path_raw outputs/tracking \
+    --sam_checkpoint sam_vit_h_4b8939.pth --sam-model-type vit_h \
+    --cotracker_checkpoint cotracker \
+    --cotracker-model-weights cotracker/scaled_offline.pth \
+    --yolo_checkpoint yolov8n.pt \
+    --work-dir logs
+```
+
+**Step 2: Trajectory-based motion captioning.** Foreground trajectories are drawn on the video (one color per object), then Qwen2.5-VL-72B produces a global caption and a motion caption for each colored object. Videos with no foreground object or more than 7 foreground objects are skipped. This step requires 8 GPUs (`tensor_parallel_size=8`).
+
+```bash
+python vis_caption.py \
+    --metadata videos.csv \
+    --tracking_root outputs/tracking \
+    --output_root outputs/final \
+    --visualization_root outputs/vis \
+    --model_path checkpoints/Qwen2.5-VL-72B-Instruct \
+    --split_num 1 --split_index 0
+```
+
+The final JSONs are saved in `outputs/final/<idx // 5000>/`. Each JSON contains per-point `tracking`, `tracking_vis_value`, `id`, and `mask_cluster`, followed by `color_map`, `description_global`, `description_motion`, and `id_caption_map` (object ID → motion caption).
+
+**Step 3 (optional): Augmentation.**
+
+```bash
+# Random crop to simulate objects entering the scene (crop parameters are stored in the output JSONs)
+python crop_video.py outputs/final --output-directory outputs/final_crop
+
+# Reference image with randomly transformed subjects
+python ref_image_process.py --video <video.mp4> --json <final.json> --output-image <ref.png>
+```
+
+### Sample Cases
+
+We also release sample cases for reference in the same [data pipeline link](https://huggingface.co/hlwang06/WorldCanvas/tree/main/WorldCanvas_data):
+
+```
+├── worldcanvas_data_pipeline/      # pipeline code
+├── worldcanvas_raw_videos/         # sample videos: {id}.mp4
+└── worldcanvas_pipeline_results/   # final JSONs: {id}.json, plus {id}_crop.json from crop_video.py
+```
+
+`worldcanvas_raw_videos/{id}.mp4` corresponds one-to-one with `worldcanvas_pipeline_results/{id}.json` and `{id}_crop.json`.
 
 
 # Citation
